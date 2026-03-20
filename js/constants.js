@@ -64,7 +64,7 @@ export const LV_UP = {
 
 export const MAX_LV = 15;
 export const MAX_ITEMS = 5;
-export const MAX_FLOOR = 5;
+export const MAX_FLOOR = 5; // Update this when adding stages
 
 // Battle constants
 export const PLAYER_SHIP_W = 10;

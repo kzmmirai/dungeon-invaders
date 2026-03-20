@@ -6,11 +6,18 @@ import { rollChestDrop, createItemInstance } from './items.js';
 import * as UI from './ui.js';
 import { drawSprite } from './sprites.js';
 import * as SPR from './sprites.js';
+import { initTouch, getTouchState, isTouchDevice } from './touch.js';
 
 // ===== INIT =====
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
+
+// Init touch controls if on mobile
+if (isTouchDevice()) {
+  initTouch(canvas);
+  document.body.classList.add('touch-device');
+}
 
 const player = new Player();
 const dungeonRenderer = new DungeonRenderer(ctx);
@@ -273,16 +280,18 @@ function update() {
       }
       break;
     }
-    case SCENE.DUNGEON:
+    case SCENE.DUNGEON: {
+      const t = getTouchState();
       moveTimer++;
       if (moveTimer >= 8) {
-        if (keys['ArrowUp'] || keys['w']) { tryMove(0, -1); moveTimer = 0; }
-        else if (keys['ArrowDown'] || keys['s']) { tryMove(0, 1); moveTimer = 0; }
-        else if (keys['ArrowLeft'] || keys['a']) { tryMove(-1, 0); moveTimer = 0; }
-        else if (keys['ArrowRight'] || keys['d']) { tryMove(1, 0); moveTimer = 0; }
+        if (keys['ArrowUp'] || keys['w'] || t.up) { tryMove(0, -1); moveTimer = 0; }
+        else if (keys['ArrowDown'] || keys['s'] || t.down) { tryMove(0, 1); moveTimer = 0; }
+        else if (keys['ArrowLeft'] || keys['a'] || t.left) { tryMove(-1, 0); moveTimer = 0; }
+        else if (keys['ArrowRight'] || keys['d'] || t.right) { tryMove(1, 0); moveTimer = 0; }
       }
       for (let i = 1; i <= 5; i++) {
-        if (consumeKey(String(i))) {
+        if (consumeKey(String(i)) || t.items[i - 1]) {
+          t.items[i - 1] = false;
           const item = player.useItem(i - 1);
           if (item && item.use) {
             UI.showMessage(item.use(player), 1500);
@@ -293,7 +302,7 @@ function update() {
       }
       if (consumeKey('q')) saveGame();
       break;
-
+    }
     case SCENE.BATTLE:
       if (battle) battle.update();
       break;

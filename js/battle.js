@@ -5,6 +5,7 @@ import { createFormation } from './enemies.js';
 import { rollDrop } from './items.js';
 import { drawFlash, triggerFlash, drawLevelUp, triggerLevelUp } from './ui.js';
 import * as UI from './ui.js';
+import { getTouchState } from './touch.js';
 
 export class Battle {
   constructor(ctx, player, floor, onEnd) {
@@ -139,16 +140,17 @@ export class Battle {
     const bulletSpeed = this.player.bulletSpeed * (rapidFire ? 2 : 1);
     const shootCooldownMax = rapidFire ? 5 : 10;
 
-    // Movement
+    // Movement (keyboard + touch)
     const spd = PLAYER_SPEED;
-    if (this.keys['ArrowLeft'] || this.keys['a']) this.shipX = Math.max(0, this.shipX - spd);
-    if (this.keys['ArrowRight'] || this.keys['d']) this.shipX = Math.min(CANVAS_W - this.shipW, this.shipX + spd);
-    if (this.keys['ArrowUp'] || this.keys['w']) this.shipY = Math.max(10, this.shipY - spd);
-    if (this.keys['ArrowDown'] || this.keys['s']) this.shipY = Math.min(CANVAS_H - this.shipH - 2, this.shipY + spd);
+    const t = getTouchState();
+    if (this.keys['ArrowLeft'] || this.keys['a'] || t.left) this.shipX = Math.max(0, this.shipX - spd);
+    if (this.keys['ArrowRight'] || this.keys['d'] || t.right) this.shipX = Math.min(CANVAS_W - this.shipW, this.shipX + spd);
+    if (this.keys['ArrowUp'] || this.keys['w'] || t.up) this.shipY = Math.max(10, this.shipY - spd);
+    if (this.keys['ArrowDown'] || this.keys['s'] || t.down) this.shipY = Math.min(CANVAS_H - this.shipH - 2, this.shipY + spd);
 
     // Shoot
     if (this.bulletCooldown > 0) this.bulletCooldown--;
-    if (this.keys[' '] && this.bulletCooldown <= 0 && this.ammo > 0) {
+    if ((this.keys[' '] || t.shoot) && this.bulletCooldown <= 0 && this.ammo > 0) {
       this.playerBullets.push({ x: this.shipX + this.shipW / 2 - 0.5, y: this.shipY - 4, speed: bulletSpeed, trail: [] });
       this.ammo--;
       this.bulletCooldown = shootCooldownMax;
