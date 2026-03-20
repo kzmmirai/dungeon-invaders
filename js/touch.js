@@ -1,5 +1,5 @@
 // ===== TOUCH CONTROLS FOR MOBILE =====
-// Virtual D-pad (left side) + Action buttons (right side)
+// Analog stick (left) + Action buttons (right)
 
 let touchState = {
   left: false, right: false, up: false, down: false,
@@ -8,17 +8,15 @@ let touchState = {
 
 let dpadCenter = null;
 let dpadTouchId = null;
-let actionTouchId = null;
 
-const DPAD_RADIUS = 40;
-const DEADZONE = 10;
+const DPAD_RADIUS = 50;
+const DEADZONE = 8; // small deadzone for responsive feel
 
 export function getTouchState() { return touchState; }
 
 export function initTouch(canvas) {
   const container = document.getElementById('game-container');
 
-  // Create touch overlay
   const overlay = document.createElement('div');
   overlay.id = 'touch-overlay';
   overlay.innerHTML = `
@@ -32,6 +30,8 @@ export function initTouch(canvas) {
         <button class="touch-btn item-btn" data-item="1">1</button>
         <button class="touch-btn item-btn" data-item="2">2</button>
         <button class="touch-btn item-btn" data-item="3">3</button>
+        <button class="touch-btn item-btn" data-item="4">4</button>
+        <button class="touch-btn item-btn" data-item="5">5</button>
       </div>
     </div>
   `;
@@ -41,24 +41,44 @@ export function initTouch(canvas) {
   const knob = document.getElementById('dpad-knob');
   const shootBtn = document.getElementById('btn-shoot');
 
-  // D-pad touch
-  dpad.addEventListener('touchstart', e => {
-    e.preventDefault();
-    const touch = e.changedTouches[0];
-    dpadTouchId = touch.identifier;
-    const rect = dpad.getBoundingClientRect();
-    dpadCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-    updateDpad(touch);
-  }, { passive: false });
-
-  dpad.addEventListener('touchmove', e => {
-    e.preventDefault();
+  // D-pad: use the entire left half of screen as touch area
+  document.addEventListener('touchstart', e => {
     for (const touch of e.changedTouches) {
-      if (touch.identifier === dpadTouchId) updateDpad(touch);
+      // Left half = dpad
+      if (touch.clientX < window.innerWidth * 0.4 && dpadTouchId === null) {
+        e.preventDefault();
+        dpadTouchId = touch.identifier;
+        dpadCenter = { x: touch.clientX, y: touch.clientY };
+        // Show dpad at touch position
+        dpad.style.left = (touch.clientX - 60) + 'px';
+        dpad.style.top = (touch.clientY - 60) + 'px';
+        dpad.style.opacity = '1';
+        updateDpad(touch);
+      }
     }
   }, { passive: false });
 
-  dpad.addEventListener('touchend', e => {
+  document.addEventListener('touchmove', e => {
+    for (const touch of e.changedTouches) {
+      if (touch.identifier === dpadTouchId) {
+        e.preventDefault();
+        updateDpad(touch);
+      }
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchend', e => {
+    for (const touch of e.changedTouches) {
+      if (touch.identifier === dpadTouchId) {
+        dpadTouchId = null;
+        touchState.left = touchState.right = touchState.up = touchState.down = false;
+        knob.style.transform = 'translate(-50%, -50%)';
+        dpad.style.opacity = '0.5';
+      }
+    }
+  });
+
+  document.addEventListener('touchcancel', e => {
     for (const touch of e.changedTouches) {
       if (touch.identifier === dpadTouchId) {
         dpadTouchId = null;
@@ -76,49 +96,44 @@ export function initTouch(canvas) {
     const clampDist = Math.min(dist, DPAD_RADIUS);
     const angle = Math.atan2(dy, dx);
 
-    // Move knob visually
     const kx = Math.cos(angle) * clampDist;
     const ky = Math.sin(angle) * clampDist;
     knob.style.transform = `translate(calc(-50% + ${kx}px), calc(-50% + ${ky}px))`;
 
-    // Update state
+    // Use separate thresholds - makes diagonal movement natural
     touchState.left = dx < -DEADZONE;
     touchState.right = dx > DEADZONE;
     touchState.up = dy < -DEADZONE;
     touchState.down = dy > DEADZONE;
   }
 
-  // Shoot button
+  // Shoot button - support held press
   shootBtn.addEventListener('touchstart', e => {
     e.preventDefault();
     touchState.shoot = true;
   }, { passive: false });
-  shootBtn.addEventListener('touchend', e => {
-    touchState.shoot = false;
-  });
+  shootBtn.addEventListener('touchend', () => { touchState.shoot = false; });
+  shootBtn.addEventListener('touchcancel', () => { touchState.shoot = false; });
 
-  // Item buttons
+  // Item buttons 1-5
   overlay.querySelectorAll('.item-btn').forEach(btn => {
     const idx = parseInt(btn.dataset.item) - 1;
     btn.addEventListener('touchstart', e => {
       e.preventDefault();
       touchState.items[idx] = true;
     }, { passive: false });
-    btn.addEventListener('touchend', () => {
-      touchState.items[idx] = false;
-    });
+    btn.addEventListener('touchend', () => { touchState.items[idx] = false; });
+    btn.addEventListener('touchcancel', () => { touchState.items[idx] = false; });
   });
 
-  // Also add tap-to-start for title/gameover
+  // Tap canvas to start (title/gameover)
   canvas.addEventListener('touchstart', e => {
     e.preventDefault();
-    // Simulate Enter key press for scene transitions
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
     setTimeout(() => window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter' })), 100);
   }, { passive: false });
 }
 
-// Detect if device has touch
 export function isTouchDevice() {
   return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 }

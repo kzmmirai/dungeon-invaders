@@ -274,15 +274,29 @@ body {
   pointer-events: none;
 }
 
-.touch-device #touch-overlay { display: flex; justify-content: space-between; padding: 10px 20px; }
+.touch-device #touch-overlay { display: block; }
 .touch-device #controls-bar { display: none; }
 
-#touch-dpad {
-  position: relative;
-  width: 120px;
-  height: 120px;
+#touch-buttons {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
   pointer-events: auto;
   touch-action: none;
+}
+
+#touch-dpad {
+  position: fixed;
+  width: 120px;
+  height: 120px;
+  pointer-events: none;
+  touch-action: none;
+  opacity: 0.5;
+  transition: opacity 0.2s;
 }
 
 .dpad-bg {
@@ -306,14 +320,7 @@ body {
   transition: none;
 }
 
-#touch-buttons {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  pointer-events: auto;
-  touch-action: none;
-}
+/* #touch-buttons is positioned fixed in mobile section above */
 
 .touch-btn {
   background: rgba(255,255,255,0.1);
