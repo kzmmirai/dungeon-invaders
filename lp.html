@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DUNGEON INVADERS - ダンジョン × インベーダー RPG</title>
+  <meta name="description" content="ダンジョン探索RPG × インベーダー風シューティング。ブラウザだけで遊べるレトロドット絵ゲーム。">
+  <meta property="og:title" content="DUNGEON INVADERS">
+  <meta property="og:description" content="ダンジョン探索 × インベーダー戦闘。5ステージを生き延びろ。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kzmmirai.github.io/dungeon-invaders/lp.html">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #06060e;
+      color: #e0e0e0;
+      font-family: 'Noto Sans JP', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(255,68,68,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 50%, rgba(255,215,0,0.08) 0%, transparent 50%);
+    }
+
+    .hero-content { position: relative; z-index: 1; }
+
+    .logo-dungeon {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(32px, 8vw, 72px);
+      color: #ffd700;
+      text-shadow: 3px 3px 0 #aa8800, 0 0 30px rgba(255,215,0,0.3);
+      line-height: 1.2;
+    }
+
+    .logo-invaders {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(32px, 8vw, 72px);
+      color: #cc4444;
+      text-shadow: 3px 3px 0 #882222, 0 0 30px rgba(204,68,68,0.3);
+      margin-bottom: 16px;
+    }
+
+    .hero-tagline {
+      font-size: clamp(14px, 2.5vw, 20px);
+      color: #888;
+      margin-bottom: 40px;
+      font-family: 'Press Start 2P', monospace;
+    }
+
+    .play-btn {
+      display: inline-block;
+      padding: 18px 48px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(14px, 2.5vw, 20px);
+      color: #fff;
+      background: linear-gradient(135deg, #cc4444 0%, #aa2222 100%);
+      border: 3px solid #ff6666;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 0 20px rgba(204,68,68,0.3);
+    }
+
+    .play-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 40px rgba(204,68,68,0.5);
+      background: linear-gradient(135deg, #dd5555 0%, #cc3333 100%);
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 30px;
+      color: #444;
+      font-size: 12px;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(8px); }
+    }
+
+    /* ===== STARS BG ===== */
+    .stars {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .star {
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+      animation: twinkle 3s infinite alternate;
+    }
+
+    @keyframes twinkle {
+      0% { opacity: 0.2; }
+      100% { opacity: 0.8; }
+    }
+
+    /* ===== SECTIONS ===== */
+    section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 80px 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(16px, 3vw, 24px);
+      color: #ffd700;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    /* Features */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: rgba(26,26,46,0.8);
+      border: 1px solid #333;
+      padding: 24px;
+      text-align: center;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: #ffd700;
+    }
+
+    .feature-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    .feature-card h3 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      color: #ffd700;
+      margin-bottom: 12px;
+    }
+
+    .feature-card p {
+      font-size: 14px;
+      color: #aaa;
+      line-height: 1.8;
+    }
+
+    /* Stages */
+    .stages {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .stage-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(26,26,46,0.6);
+      border: 1px solid #222;
+      padding: 16px 20px;
+      transition: border-color 0.2s;
+    }
+
+    .stage-row:hover { border-color: #555; }
+
+    .stage-num {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 14px;
+      color: #ffd700;
+      min-width: 80px;
+    }
+
+    .stage-name {
+      font-size: 16px;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .stage-desc {
+      font-size: 13px;
+      color: #888;
+    }
+
+    /* How to play */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .control-group h3 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+      color: #88ccff;
+      margin-bottom: 12px;
+    }
+
+    .control-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid #1a1a2e;
+    }
+
+    .key {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+      background: #1a1a2e;
+      border: 1px solid #444;
+      padding: 4px 10px;
+      color: #ffd700;
+      white-space: nowrap;
+    }
+
+    .control-item span:last-child {
+      font-size: 13px;
+      color: #aaa;
+    }
+
+    /* CTA */
+    .cta-section {
+      text-align: center;
+      padding: 100px 24px;
+    }
+
+    .cta-text {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(12px, 2vw, 18px);
+      color: #888;
+      margin-bottom: 32px;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      color: #444;
+      font-size: 12px;
+      border-top: 1px solid #1a1a2e;
+      position: relative;
+      z-index: 1;
+    }
+
+    footer a { color: #666; text-decoration: none; }
+    footer a:hover { color: #aaa; }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+      .controls-grid { grid-template-columns: 1fr; }
+      section { padding: 50px 16px; }
+      .stage-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Stars background -->
+<div class="stars" id="stars"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-content">
+    <h1 class="logo-dungeon">DUNGEON</h1>
+    <h1 class="logo-invaders">INVADERS</h1>
+    <p class="hero-tagline">Dungeon Crawl × Space Invaders</p>
+    <a href="index.html" class="play-btn">PLAY NOW</a>
+  </div>
+  <p class="hero-scroll">▼ SCROLL</p>
+</div>
+
+<!-- FEATURES -->
+<section>
+  <h2 class="section-title">GAME FEATURES</h2>
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon">🗡️</div>
+      <h3>DUNGEON RPG</h3>
+      <p>ランダム生成されるダンジョンを探索。宝箱、回復泉、そして恐ろしい敵が待ち受ける。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">👾</div>
+      <h3>INVADER BATTLE</h3>
+      <p>敵に遭遇するとインベーダー風シューティング戦闘が開始。弾数制限があるから一発一発が大事。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⏱️</div>
+      <h3>TIME LIMIT</h3>
+      <p>各ステージに時間制限あり。のんびりしてる暇はない。素早く正確に敵を倒せ。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🐉</div>
+      <h3>BOSS FIGHT</h3>
+      <p>最終ステージには3フェーズのドラゴンボス。手下20体を引き連れて襲いかかる。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <h3>PLAY ANYWHERE</h3>
+      <p>PC・スマホ対応。ブラウザだけで遊べる。インストール不要、完全無料。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎵</div>
+      <h3>RETRO SOUND</h3>
+      <p>Web Audio APIによるチップチューンBGMと多彩なSE。レトロゲームの雰囲気を再現。</p>
+    </div>
+  </div>
+</section>
+
+<!-- STAGES -->
+<section>
+  <h2 class="section-title">5 STAGES</h2>
+  <div class="stages">
+    <div class="stage-row">
+      <span class="stage-num">STAGE 1</span>
+      <span class="stage-name">地下洞窟</span>
+      <span class="stage-desc">スライムの群れ / 25秒</span>
+    </div>
+    <div class="stage-row">
+      <span class="stage-num">STAGE 2</span>
+      <span class="stage-name">暗黒の森</span>
+      <span class="stage-desc">コウモリ＋スライム混成 / 30秒</span>
+    </div>
+    <div class="stage-row">
+      <span class="stage-num">STAGE 3</span>
+      <span class="stage-name">骨の迷宮</span>
+      <span class="stage-desc">スケルトン＋コウモリ / 35秒</span>
+    </div>
+    <div class="stage-row">
+      <span class="stage-num">STAGE 4</span>
+      <span class="stage-name">魔王の城</span>
+      <span class="stage-desc">ダークメイジ＋ゴーレム / 40秒</span>
+    </div>
+    <div class="stage-row" style="border-color: #cc4444;">
+      <span class="stage-num" style="color: #cc4444;">STAGE 5</span>
+      <span class="stage-name" style="color: #cc4444;">ドラゴンの巣</span>
+      <span class="stage-desc">ドラゴン(BOSS) + 手下20体 / 70秒</span>
+    </div>
+  </div>
+</section>
+
+<!-- HOW TO PLAY -->
+<section>
+  <h2 class="section-title">HOW TO PLAY</h2>
+  <div class="controls-grid">
+    <div class="control-group">
+      <h3>DUNGEON</h3>
+      <div class="control-item"><span class="key">←→↑↓</span><span>移動</span></div>
+      <div class="control-item"><span class="key">1-5</span><span>アイテム使用</span></div>
+      <div class="control-item"><span class="key">Q</span><span>セーブ</span></div>
+    </div>
+    <div class="control-group">
+      <h3>BATTLE</h3>
+      <div class="control-item"><span class="key">←→↑↓</span><span>自由移動</span></div>
+      <div class="control-item"><span class="key">Space</span><span>弾発射</span></div>
+      <div class="control-item"><span class="key">1-5</span><span>アイテム使用</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <p class="cta-text">5ステージを生き延びろ。</p>
+  <a href="index.html" class="play-btn">PLAY NOW</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>DUNGEON INVADERS &copy; 2026 | Built with Claude Code</p>
+  <p style="margin-top: 8px;"><a href="https://github.com/kzmmirai/dungeon-invaders">GitHub</a></p>
+</footer>
+
+<script>
+// Generate stars
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 80; i++) {
+  const star = document.createElement('div');
+  star.className = 'star';
+  const size = Math.random() * 2 + 1;
+  star.style.cssText = `
+    width: ${size}px; height: ${size}px;
+    left: ${Math.random() * 100}%;
+    top: ${Math.random() * 100}%;
+    animation-delay: ${Math.random() * 3}s;
+    animation-duration: ${2 + Math.random() * 3}s;
+  `;
+  starsEl.appendChild(star);
+}
+</script>
+</body>
+</html>
