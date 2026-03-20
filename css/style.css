@@ -1,0 +1,265 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0a0a0a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: 'Press Start 2P', monospace;
+  color: #e0e0e0;
+  overflow: hidden;
+}
+
+#game-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100vw;
+}
+
+#game-canvas {
+  width: 100vw;
+  height: calc(100vw * 160 / 240);
+  max-height: 75vh;
+  max-width: calc(75vh * 240 / 160);
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  border: 2px solid #444;
+  background: #000;
+  display: block;
+}
+
+/* ===== Screen Overlays (crisp DOM text) ===== */
+.screen-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  width: 100vw;
+  max-width: calc(75vh * 240 / 160);
+  height: calc(100vw * 160 / 240);
+  max-height: 75vh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.screen-overlay.hidden { display: none; }
+
+/* Title */
+#title-screen {
+  background: radial-gradient(ellipse at center, #0e0e1a 0%, #06060a 100%);
+}
+
+.title-dungeon {
+  font-size: clamp(24px, 4vw, 48px);
+  color: #ffd700;
+  text-shadow: 2px 2px 0 #aa8800, 0 0 10px rgba(255,215,0,0.3);
+  margin-bottom: 4px;
+}
+
+.title-invaders {
+  font-size: clamp(24px, 4vw, 48px);
+  color: #cc4444;
+  text-shadow: 2px 2px 0 #882222, 0 0 10px rgba(204,68,68,0.3);
+  margin-bottom: 16px;
+}
+
+.title-sub {
+  font-size: clamp(8px, 1.2vw, 14px);
+  color: #888;
+  margin-bottom: 24px;
+}
+
+#title-sprites {
+  height: 30px;
+  margin-bottom: 24px;
+}
+
+#title-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.menu-item {
+  font-size: clamp(10px, 1.5vw, 16px);
+  color: #888;
+  transition: color 0.1s;
+}
+
+.menu-item.selected {
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255,215,0,0.4);
+}
+
+.menu-item.hidden { display: none; }
+
+.title-hint {
+  font-size: clamp(7px, 1vw, 10px);
+  color: #444;
+}
+
+/* Game Over */
+#gameover-screen { background: radial-gradient(ellipse at center, #1a0008 0%, #0a0004 100%); }
+
+.gameover-title {
+  font-size: clamp(24px, 4vw, 48px);
+  color: #cc4444;
+  text-shadow: 2px 2px 0 #661111, 0 0 15px rgba(204,68,68,0.5);
+  margin-bottom: 24px;
+}
+
+.gameover-info {
+  font-size: clamp(10px, 1.3vw, 14px);
+  color: #aaa;
+  margin-bottom: 32px;
+}
+
+.gameover-retry, .clear-retry {
+  font-size: clamp(8px, 1.1vw, 12px);
+  color: #eee;
+}
+
+/* Game Clear */
+#clear-screen { background: radial-gradient(ellipse at center, #0a1200 0%, #040800 100%); }
+
+.clear-title {
+  font-size: clamp(18px, 3vw, 36px);
+  color: #ffd700;
+  text-shadow: 2px 2px 0 #aa8800, 0 0 15px rgba(255,215,0,0.5);
+  margin-bottom: 16px;
+}
+
+.clear-sub {
+  font-size: clamp(10px, 1.5vw, 16px);
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.clear-info {
+  font-size: clamp(9px, 1.2vw, 13px);
+  color: #aaa;
+  margin-bottom: 28px;
+}
+
+@keyframes blinker { 50% { opacity: 0; } }
+.blink { animation: blinker 1.2s step-start infinite; }
+
+/* ===== HUD ===== */
+#hud {
+  width: 100vw;
+  max-width: calc(75vh * 240 / 160);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 16px;
+  background: #1a1a2e;
+  border: 2px solid #333;
+  border-top: none;
+  font-size: 13px;
+  font-family: 'Press Start 2P', monospace;
+}
+
+#hud-left, #hud-right { display: flex; gap: 14px; }
+#hud-floor { color: #ffd700; }
+#hud-lv { color: #88ccff; }
+#hud-exp { color: #aaffaa; }
+
+#hp-bar-container {
+  position: relative;
+  width: 200px;
+  height: 18px;
+  background: #333;
+  border: 1px solid #555;
+}
+#hp-bar { width: 100%; height: 100%; background: #44cc44; transition: width 0.3s; }
+#hp-text {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; color: #fff;
+  text-shadow: 1px 1px 0 #000;
+  font-family: 'Press Start 2P', monospace;
+}
+
+#items-bar {
+  width: 100vw;
+  max-width: calc(75vh * 240 / 160);
+  display: flex;
+  justify-content: space-around;
+  padding: 4px 8px;
+  background: #1a1a2e;
+  border: 2px solid #333;
+  border-top: none;
+  font-size: 11px;
+  font-family: 'Press Start 2P', monospace;
+}
+.item-slot { color: #666; padding: 2px 4px; }
+.item-slot.has-item { color: #ffcc00; }
+
+#controls-bar {
+  width: 100vw;
+  max-width: calc(75vh * 240 / 160);
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 5px 8px;
+  background: #111;
+  border: 2px solid #333;
+  border-top: none;
+  font-size: 10px;
+  color: #888;
+  font-family: 'Press Start 2P', monospace;
+}
+
+#message-box {
+  width: 100vw;
+  max-width: calc(75vh * 240 / 160);
+  min-height: 24px;
+  padding: 5px 12px;
+  background: #111;
+  border: 2px solid #333;
+  border-top: none;
+  font-size: 12px;
+  color: #ccc;
+  text-align: center;
+  font-family: 'Press Start 2P', monospace;
+}
+
+/* ===== Swap Modal ===== */
+#swap-modal {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.85);
+  z-index: 100;
+}
+#swap-modal.hidden { display: none; }
+
+#swap-modal-inner {
+  background: #1a1a2e;
+  border: 2px solid #ffd700;
+  padding: 20px 28px;
+  min-width: 320px;
+  text-align: center;
+  font-family: 'Press Start 2P', monospace;
+}
+#swap-modal-inner h2 { color: #ffd700; font-size: 14px; margin-bottom: 10px; }
+#swap-new-item { color: #fff; font-size: 11px; margin-bottom: 6px; }
+.swap-hint { color: #aaa; font-size: 9px; margin-bottom: 10px; }
+#swap-list { list-style: none; text-align: left; margin-bottom: 6px; }
+#swap-list li { color: #aaa; font-size: 10px; padding: 3px 6px; margin: 2px 0; }
+#swap-list li.selected { color: #ffd700; background: rgba(255,215,0,0.1); }
+#swap-discard { color: #666; font-size: 10px; padding: 3px 6px; text-align: left; margin-bottom: 10px; }
+#swap-discard.selected { color: #cc4444; background: rgba(204,68,68,0.1); }
+.swap-controls { color: #555; font-size: 8px; }

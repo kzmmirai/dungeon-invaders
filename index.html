@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DUNGEON INVADERS</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas" width="240" height="160"></canvas>
+
+    <!-- Title Screen (DOM overlay) -->
+    <div id="title-screen" class="screen-overlay">
+      <h1 class="title-dungeon">DUNGEON</h1>
+      <h1 class="title-invaders">INVADERS</h1>
+      <p class="title-sub">Dungeon Crawl × Space Invaders</p>
+      <div id="title-sprites"></div>
+      <div id="title-menu">
+        <p id="menu-new" class="menu-item selected">&gt; NEW GAME &lt;</p>
+        <p id="menu-continue" class="menu-item hidden">CONTINUE</p>
+      </div>
+      <p class="title-hint">ENTER: SELECT</p>
+    </div>
+
+    <!-- Game Over Screen (DOM overlay) -->
+    <div id="gameover-screen" class="screen-overlay hidden">
+      <h1 class="gameover-title">GAME OVER</h1>
+      <p id="gameover-info" class="gameover-info"></p>
+      <p class="gameover-retry blink">PRESS ENTER TO RETRY</p>
+    </div>
+
+    <!-- Game Clear Screen (DOM overlay) -->
+    <div id="clear-screen" class="screen-overlay hidden">
+      <h1 class="clear-title">CONGRATULATIONS!</h1>
+      <p class="clear-sub">ダンジョンを制覇した！</p>
+      <p id="clear-info" class="clear-info"></p>
+      <p class="clear-retry blink">PRESS ENTER</p>
+    </div>
+
+    <!-- Item Swap Modal -->
+    <div id="swap-modal" class="hidden">
+      <div id="swap-modal-inner">
+        <h2>アイテムがいっぱい！</h2>
+        <p id="swap-new-item"></p>
+        <p class="swap-hint">入替えるアイテムを選択:</p>
+        <ul id="swap-list"></ul>
+        <p id="swap-discard" class="swap-option">新アイテムを捨てる</p>
+        <p class="swap-controls">[↑↓] 選択　[Enter] 決定</p>
+      </div>
+    </div>
+
+    <div id="hud">
+      <div id="hud-left">
+        <span id="hud-floor">STAGE 1</span>
+        <span id="hud-lv">Lv.1</span>
+      </div>
+      <div id="hud-center">
+        <div id="hp-bar-container">
+          <div id="hp-bar"></div>
+          <span id="hp-text">HP 30/30</span>
+        </div>
+      </div>
+      <div id="hud-right">
+        <span id="hud-exp">EXP 0</span>
+      </div>
+    </div>
+    <div id="items-bar">
+      <span class="item-slot" data-slot="1">1: ---</span>
+      <span class="item-slot" data-slot="2">2: ---</span>
+      <span class="item-slot" data-slot="3">3: ---</span>
+      <span class="item-slot" data-slot="4">4: ---</span>
+      <span class="item-slot" data-slot="5">5: ---</span>
+    </div>
+    <div id="controls-bar">
+      <span>[←→↑↓] 移動</span>
+      <span>[Space] 弾発射</span>
+      <span>[1-5] アイテム使用</span>
+      <span>[Q] セーブ</span>
+    </div>
+    <div id="message-box"></div>
+  </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
